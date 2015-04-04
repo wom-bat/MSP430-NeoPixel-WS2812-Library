@@ -36,9 +36,9 @@ void WS2812::setLEDColour(uint16_t p, uint8_t r, uint8_t g, uint8_t b)
 {
   if (p < numLeds) {
 	  p *= 3;
-	  leds[p] = (g * brightness) >> 8;
-	  leds[p + 1] = (r * brightness) >> 8;
-	  leds[p + 2] = (b * brightness) >> 8;
+	  leds[p] = g;
+	  leds[p + 1] = r;
+	  leds[p + 2] = b;
   }
 }
 
@@ -48,7 +48,12 @@ void WS2812::setLEDColour(uint16_t p, uint32_t c)
 	r = (uint8_t)(c >> 16);
 	g = (uint8_t)(c >> 8);
 	b = (uint8_t)c;
-	setLEDColour(p, r, g, b);
+	if (p < numLeds) {
+		p *= 3;
+		leds[p] = g;
+		leds[p + 1] = r;
+		leds[p + 2] = b;
+	}
 }
 
 uint32_t WS2812::Colour(uint8_t r, uint8_t g, uint8_t b)
@@ -90,37 +95,9 @@ void WS2812::clear(){
 
 // Fill the strip with a solid color. This will update the strip.
 void WS2812::fill(uint8_t r, uint8_t g, uint8_t b){
-  unsigned int i;
+  int i;
   for (i = 0; i < numLeds; i++) {
     setLEDColour(i, r, g, b);		// set all LEDs to specified color
   }
   show();			    // refresh strip
-}
-
-uint16_t WS2812::numPixels(void) {
-  return numLeds;
-}
-
-uint8_t WS2812::getBrightness(void) {
-  return brightness - 1;
-}
-
-void WS2812::setBrightness(uint8_t b) {
-  uint8_t oldBrightness = brightness - 1;
-
-  b += 1;
-
-  if (b != brightness) {
-    uint16_t scale;
-    if (oldBrightness == 0)
-      scale = 0;
-    else if (b == 0) {
-      scale = 65535 / oldBrightness;
-    } else {
-      scale = (uint16_t) ((b << 8) - 1) / oldBrightness;
-    }
-    for (int i = 0; i < numBytes; i++)
-      leds[i] = (leds[i] * scale) >> 8;
-    brightness = b;
-  }
 }
